@@ -1,3 +1,110 @@
+## N-01: No ORDER BY means no guaranteed row order (21 Nov 2026)
+
+### Context
+In the `toy` database, `SELECT * FROM books` returned ids in the order
+2, 3, 4, 1. Dune (id 1) came last, and it was the row I had updated on
+Thursday.
+
+### Options considered
+- Rely on the order rows happened to come back in.
+- Always add an explicit `ORDER BY` when order matters.
+
+### Decision
+Always use `ORDER BY` when the order matters (lookups, "latest report",
+paginated lists).
+
+### Consequences
+An UPDATE writes a new version of the row into free physical space, so a
+sequential scan without `ORDER BY` returns rows in their current physical
+disk order, not insertion order. That order can change at any time, so any
+code that depends on it will break silently.
+
+### How to test
+Run `SELECT * FROM books;` before and after `UPDATE books SET ... WHERE id = 1;`
+and compare the order. Then add `ORDER BY id` and confirm it is stable.
+
+---
+
+## N-02: .gitignore re-include for .env.example (20 Nov 2026)
+
+### Context
+I wanted `.env.*` ignored (real secrets) but `.env.example` committed
+(a safe template). `git check-ignore -v .env.example` still showed it as
+ignored by the `.env.*` line.
+
+### Options considered
+- Leave `.env.example` ignored and share it some other way.
+- Add a re-include line `!.env.example`.
+
+### Decision
+Add `!.env.example` after the `.env.*` line.
+
+### Consequences
+`.env.*` also matches `.env.example`, so it is ignored by default. A `!`
+re-include only works when it comes AFTER the broader rule; the last
+matching rule wins. Wrong order means the file stays ignored.
+
+### How to test
+`git check-ignore -v .env.local` should print the `.env.*` rule (ignored).
+`git check-ignore -v .env.example` should print the `!` line or nothing,
+and `git status` should show `.env.example` as untracked or tracked, not
+ignored.
+
+---
+
+## N-03: Repo is private first, public later (18 Nov 2026)
+
+### Context
+GitHub repo `ona-scam-hub` exists with early, messy commits.
+
+### Options considered
+- Public from day one.
+- Private now, public later.
+
+### Decision
+Private for now. Why: [FILL: your reason].
+
+### Consequences
+Nothing is public until I choose to flip it. Proposed point to flip it:
+before any public launch, after the privacy checks and the lawyer review
+described in MASTER_PLAN section 4. [FILL: confirm or change this]
+
+### How to test
+GitHub repo Settings shows visibility as Private. Re-check before sharing
+the link with anyone.
+
+---
+
+## N-04: SERIAL fills the id; psql keeps going after an error (21 Nov 2026)
+
+### Context
+My warm-up predictions assumed two things that were wrong. I thought
+leaving `id` out of an INSERT would fail because a primary key cannot be
+null. I also thought a failed CREATE TABLE stops the rest of a file.
+
+### Options considered
+Not a design choice; these are corrected models.
+
+### Decision
+Remember the correct behaviour:
+- `id SERIAL PRIMARY KEY` fills the id automatically from a sequence
+  (`nextval(...)` as the column default). The INSERT in my toy file would
+  have worked on a table built from that file.
+- My old `books` table rejected the INSERT because its `id` had no default
+  [CONFIRM: check with `\d books` and write what the Default column shows].
+- `psql` runs the next statement after an error in a file unless
+  `ON_ERROR_STOP` is set. This matters for migrations: a half-applied
+  migration is possible.
+
+### Consequences
+Migration runs should use `ON_ERROR_STOP` (and ideally a transaction), so a
+failure stops the file instead of leaving a half-built schema.
+
+### How to test
+Run a file with a bad first statement and a good second one, with and
+without `\set
+
+
 ## D-PHONE-01: Malawi phone validation vs prefix allowlisting (21 Nov 2026)
 
 ### Context
