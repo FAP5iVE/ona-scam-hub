@@ -182,3 +182,49 @@ typos without that cost.
 - 098: UNVERIFIED / OBSERVED IN USE. Not in the ITU PDF. Reported in Airtel
   Malawi 2021 results. Source URL: TO ADD.
 - Prefix-to-operator mapping stays provisional; not used in validation or seed files.
+
+Story 6 mask: the rule only covers phone numbers. Either say the feed lists PHONE identifiers only for now, or define masks for email, social handle and URL. Also, your claim about "2-digit carrier prefix" assumes a prefix structure that the plan says must be verified in Week 1, so mark it "verify". 
+Story 6 reasoning: the 100,000 figure is true, but weak by itself. The real defence is the mask together with Story 7's rate limit. A scraper who can try 100,000 candidates through lookup is stopped by the 429, not by the arithmetic. Say so in the note. 
+Story 2: it covers UNKNOWN, PENDING_REVIEW and HIGH_RISK. UNDER_APPEAL and DELISTED are handled in Stories 10 and 15 and §3.2, but add one line pointing there so a reader isn't left guessing.
+
+## ERD v0 triage: fixes planned for ERD v1 (proposed; v1 due Sat 28 Nov)
+
+`erd-v0.svg` stays untouched as history. These changes go into the working copy for ERD v1.
+
+| # | ERD note | Label | Decision / next step |
+|---|---|---|---|
+| 1 | `tags` is a string in Reports and MerchantReviews (breaks 1NF) | fix now (normalise Mon 23 Nov) | Replace with a `tags` catalogue plus junction tables `report_tags(report_id, tag_id)` and `merchant_review_tags`, each with a composite primary key. |
+| 2 | No `created_at` on Reports, MerchantReviews, Appeals | fix now | Needed for the 5-reports-per-day limit, the 5-minute anomaly hold window (D6) and `last_flagged_at`. Add to every table whose rows have a time order. |
+| 3 | `impersonated_brand` is a string | decide later (Week 1) | Curated `brands` table versus a fixed tag list. |
+| 4 | Users `phone_hash` versus Identifiers `normalized_val` | decide Sat 28 Nov (D4) | Leave undecided. Both tables need a compatible representation for the rule "reporter differs from the owner" (§3.3). |
+| 5 | OTP storage missing | fix now | Add `otp_challenges` (id, purpose, target, code_hash, expires_at, attempts, consumed_at). The `target` representation depends on D4. |
+| 6 | Appeals has no decider or decision time | fix now (decider/time), decide Tue 24 Nov (concurrency) | Add `decided_by_user_id` and `decided_at`. "One open appeal per identifier" is a partial unique index, to be studied Tuesday. |
+| 7 | Merchants: `badge_level` versus verification state; `is_claimed_by` cardinality | fix now, decide Tue 24 Nov | Separate `verification_status` from `badge_level`. Add `verification_submissions` so private documents and rejection history are not overwritten. A plain UNIQUE on `identifier_id` would block a re-claim after a rejected claim, so the real rule is probably one *verified* claim per identifier (Tuesday). |
+| 8 | `merchant_reply` is one column | fix now (lightweight) | Add `reply_mod_status` so a moderator can hide an abusive reply without deleting the review. Trade-off: no record of who hid it or when, except in the audit log. |
+| 9 | AuditLogs `target_type` + `target_id` has no foreign key | disagree, keep polymorphic design | One append-only table can track every entity. Trade-off: no database-level referential integrity on `target_id`. Mitigation: a CHECK constraint listing the allowed `target_type` values, and the table stays append-only. |
+| 10 | `role` is a single string | decide later (Week 1) | Hierarchical roles versus a `user_roles` table. Rule to keep either way: a merchant must not review their own business. |
+
+Stored-status drift: `identifiers.status` stays stored for fast lookups. Risk: it can drift from the active report count if retractions, rejections or holds bypass the recalculation. Mitigation to decide in Week 2: one function that recomputes status, called everywhere.
+
+## Privacy re-check: gaps found (M0)
+
+All 15 stories pass on the main rules. Three gaps to resolve later:
+1. **Retention (rule 4):** no story says how long retracted reports, OTP records and rate-limit data are kept. Decide in Week 1.
+2. **Story 7:** the response body must not reveal whether an identifier exists, but response *timing* might. Revisit in Week 5.
+3. **Story 12:** a merchant reply could name a reviewer. Replies need the same moderation rule as reviews in Story 13.
+
+## Quiz 0 (Sun 22 Nov 2026): 8 / 9 (89%), pass
+
+| Topic | Result |
+|---|---|
+| Git: what a commit contains | Correct. |
+| Git: `git status` after a commit | Wrong. After the commit only the later edit shows, as `modified, not staged`. |
+| Git: `.gitignore` pattern `.env` and `git check-ignore -v` | Correct. |
+| Git: `git commit` needs `-m` | Correct. |
+| SQL: UPDATE/DELETE trace | Rows right; forgot the `days` values (A 14, B 14). |
+| SQL: why `INSERT (id=2, ...)` fails | Wrong reason. Duplicate PRIMARY KEY value, not "SERIAL forbids manual ids". |
+| SQL: row order without ORDER BY | Correct. |
+| SQL: UPDATE syntax (SET before WHERE) | Correct. |
+| Domain: independence rule, retraction recompute, public wording at PENDING_REVIEW | All correct. |
+
+Weak spots: (1) SERIAL supplies a default only when `id` is omitted; PRIMARY KEY is what rejects duplicates. (2) The three places in Git: working tree, staging area, last commit.
