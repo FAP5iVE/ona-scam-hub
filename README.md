@@ -68,7 +68,7 @@ PostgreSQL · psycopg v3 · Python · FastAPI · Pydantic v2 · JWT · TypeScrip
 
 | Milestone | Due | Status |
 |---|---|---|
-| M0 Foundations (repo, README, 15 user stories, ERD v0, status model) | Sun 22 Nov | In final review |
+| M0 Foundations (repo, README, 15 user stories, ERD v0, status model) | Sun 22 Nov | Done |
 | M1 Schema v1 (learner-written schema, seed, ERD v1) | Sun 29 Nov | Not started |
 
 Open decision: **D4**, how identifiers are stored for lookup (raw normalised value versus keyed hash), to be decided Sat 28 Nov. All decisions are in `docs/DECISION_LOG.md`.
@@ -84,7 +84,9 @@ _sandbox/       30-minute practice drills, not part of the product
 docs/
   MASTER_PLAN.md      product spec, business rules, privacy guardrails
   DECISION_LOG.md     every decision with date, reason and revisit-when
-  NOTES.md            user stories, status-model proposals, ERD trade-offs
+  NOTES.md            decision notes, ERD triage, privacy re-check, quiz results
+  user-stories.md     the 15 locked user stories with acceptance criteria
+  ARCHITECTURE.md     layer diagram and design choices (stub until Week 3)
   erd/                entity diagrams (erd-v0.svg now, erd-v1.svg after Week 1)
 ```
 

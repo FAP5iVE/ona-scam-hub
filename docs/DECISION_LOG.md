@@ -23,6 +23,24 @@ IDs D1–D9 are the original numbering used in the planning chat. S = stack/safe
 | D6 | High Risk flips **automatically** when 3+ independent accounts flag the same identifier, **plus an anomaly hold**: a burst of reports from new accounts stays PENDING_REVIEW until a moderator looks | 17 Nov 2026 | Learner delegated. Automatic keeps it working with no moderators on day one; the hold limits brigading | Week 6 when thresholds are tuned |
 | S3 | **Synthetic data only** during the build. No real people's numbers | 17 Nov 2026 | Defamation and data-protection exposure | Only after a Malawian lawyer reviews |
 | S4 | **No SMS provider.** OTP goes through an `OtpSender` interface; development implementation prints to the console | 17 Nov 2026 | Real SMS costs money and is out of scope | If a free, reliable route appears |
+| D-PHONE-01 | **Malawi phone validation, Option C:** the number's structure decides acceptance; a separate, updatable prefix table gives only a soft "double-check" hint, never a rejection. 7-digit landlines (MTL) are in the MUST tier. Prefixes 022, 089 and 098 are labelled UNVERIFIED / OBSERVED IN USE (not in the ITU 2017 PDF) | 21 Nov 2026 | Avoids rejecting valid numbers when prefix lists change. Full reasoning, normalisation rules and verification notes in `docs/NOTES.md` (D-PHONE-01) | Week 1, when prefixes are checked against an official numbering-plan source; Week 4 when the Pydantic phone type is built |
+| S5 | Repo `ona-scam-hub` is **public** (it started private, per NOTES N-03). Synthetic data only; no real numbers, names, secrets or `.env` files may ever be committed | 22 Nov 2026 | Learner's choice; portfolio visibility | Before any real data is considered (S3) |
+| X3 | The 15 M0 user stories are **locked** in `docs/user-stories.md` (Story 7 is a non-functional requirement; Story 11 is proposed, pending D7; Story 6's masking rule is proposed) | 22 Nov 2026 | M0 requirement; learner confirmed after review | Only by a new entry here |
+
+## Proposed, not decided (logged 22 Nov 2026; promote to Decided only when the learner confirms)
+
+| ID | Proposal | Where discussed | Decide by |
+|---|---|---|---|
+| P1 | When a moderator rejects an appeal, **recompute the status from active reports** instead of restoring `prior_status` (reporters may retract during the appeal) | Story 8 design note; status-model drill Q3 | Week 6 (appeals backend) |
+| P2 | After a delist, new reports start a **fresh cycle**; old reports do not count toward the 3-report threshold | Status-model drill Q4 | Week 6 |
+| P3 | A retracted report is **marked `retracted`**, never deleted; uniqueness of (reporter, identifier) applies to active reports only (partial unique index) | Story 8; puzzle 1 | Tue 24 Nov (partial unique index lesson) |
+| P4 | Whether the same reporter may count again after a delist: "superseded" status versus a cycle column | Puzzle 2 | Week 6 |
+| P5 | A moderator needs an arrow `HIGH_RISK -> PENDING_REVIEW` (invalidate reports), or invalidation must go through an appeal | Drill review | Week 6 |
+| P6 | Story 6 masking rule for phones: show `+265`, 2-digit carrier prefix and last 2 digits, mask the 5 middle digits; the feed lists PHONE identifiers only until masks exist for other types; the real defence is the mask plus the Story 7 rate limit | Story 6 | Week 4 (before the feed is built) |
+| P7 | Retention periods for retracted reports, OTP records and rate-limit data (privacy rule 4) | Privacy re-check, gap 1 | Week 1 |
+| P8 | Story 12: merchant replies need the same moderation rule as reviews (no naming individuals) | Privacy re-check, gap 3 | Week 6 |
+
+ERD v1 open points (brands table, single role versus a roles table, OTP table shape, one verified claim per identifier, appeal concurrency, stored versus derived status) are listed in `docs/NOTES.md` under "ERD v0 triage" and are decided between Mon 23 and Sat 28 Nov.
 
 ## Provisional (default chosen, learner can overrule)
 

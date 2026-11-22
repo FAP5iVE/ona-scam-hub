@@ -228,3 +228,51 @@ All 15 stories pass on the main rules. Three gaps to resolve later:
 | Domain: independence rule, retraction recompute, public wording at PENDING_REVIEW | All correct. |
 
 Weak spots: (1) SERIAL supplies a default only when `id` is omitted; PRIMARY KEY is what rejects duplicates. (2) The three places in Git: working tree, staging area, last commit.
+
+## N-05: Status-model gaps: rejected appeals and re-reports after a delist (22 Nov 2026)
+
+**Status: PROPOSED, NOT DECIDED.** Logged as P1 to P5 in `DECISION_LOG.md`; to be decided in Week 6 when the appeals backend is built.
+
+### Context
+`MASTER_PLAN.md` §3.2 and §3.6 define how a number gets flagged, appealed and delisted, but they do not say:
+- where a number goes when a moderator **rejects** an appeal;
+- what happens when a **delisted** number is reported again, and whether old reports still count.
+
+Story 8 adds a complication: a reporter can retract a report (the row is marked `retracted`, never deleted) while the identifier is `UNDER_APPEAL`. So the active report count can change during an appeal.
+
+### Options considered
+**A. Appeal rejected**
+1. Restore `prior_status` (the status saved when the appeal opened).
+2. Recompute the status from the currently active independent reports.
+
+**B. New report after a delist**
+1. Old reports still count toward the 3-report threshold.
+2. A fresh cycle: old reports no longer count; the first new independent report moves the number to `PENDING_REVIEW`.
+
+**C. Same reporter after a delist** (open sub-question)
+1. Mark old reports `superseded` at delist time, so a partial unique index on active reports lets the reporter count again.
+2. Add a cycle column and make uniqueness apply per cycle.
+
+### Decision
+Not decided. Current proposals:
+- **A2, recompute.** If two of three reporters retract during the appeal and the appeal is then rejected, restoring `prior_status` would show `HIGH_RISK` on only one active report. Recomputing prevents a stale status from coming back.
+- **B2, fresh cycle.** If old reports counted, a single new report would push a cleared number straight back to `HIGH_RISK` without new agreement. Old history stays in the audit log for moderator context only.
+- **C:** undecided. To compare in Week 6 after the partial unique index lesson on Tue 24 Nov.
+
+Also open: why `DELISTED` should be a separate state from `UNKNOWN`, given that both show the same public text. The likely reason (the audit boundary between cycles) needs confirming.
+
+### Consequences
+- One function must compute status from active reports, and **every** path calls it: new report, retraction, anomaly-hold decision and appeal decision. Otherwise the stored `identifiers.status` can drift from the real count.
+- `prior_status` on Appeals becomes audit information, not the value to restore.
+- B2 and C need a way to separate old reports from new ones (a `superseded` status or a cycle marker). This interacts with the partial unique index on (reporter, identifier) for active reports (P3).
+- The public never sees these internals: rejected appeals and delists show only the neutral wording from §3.2.
+
+### How to test (when built)
+| Scenario | Expected result |
+|---|---|
+| 3 active reports, appeal opened, 2 retractions, appeal rejected | `PENDING_REVIEW` (recomputed from 1 active report) |
+| 3 active reports, appeal opened, no retractions, appeal rejected | `HIGH_RISK` |
+| Retraction while `UNDER_APPEAL` | status stays `UNDER_APPEAL` until the moderator decides |
+| Delisted number gets 1 new independent report | `PENDING_REVIEW`, count 1 (not 1 plus the old reports) |
+| Same reporter who flagged before the delist reports again | depends on option C; write the test after deciding |
+| Any path above | the stored status equals the status recomputed from active reports |
