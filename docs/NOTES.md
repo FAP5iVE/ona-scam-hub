@@ -276,3 +276,51 @@ Also open: why `DELISTED` should be a separate state from `UNKNOWN`, given that 
 | Delisted number gets 1 new independent report | `PENDING_REVIEW`, count 1 (not 1 plus the old reports) |
 | Same reporter who flagged before the delist reports again | depends on option C; write the test after deciding |
 | Any path above | the stored status equals the status recomputed from active reports |
+
+## N-XX: Status-model gaps (proposed, not decided)
+
+**Context.** MASTER_PLAN §3.2 defines DELISTED only for an accepted appeal, and
+§3.6 says an appeal moves the status to UNDER_APPEAL and a moderator decides,
+but neither says where a *rejected* appeal returns to. §3.3 says a reporter
+counts once per identifier, but does not say whether that holds after a number
+is delisted and then reported again. Two situations are therefore open:
+(A) a rejected appeal, (B) a delisted number reported again.
+
+**Options.**
+- A1. Restore the status held before the appeal. Cost: may be stale if reports
+  changed during the appeal.
+- A2. Recompute from current counts (P1). Cost: the result can differ from what
+  the moderator just reviewed, which is confusing; also needs a re-appeal limit.
+- B1. Old reports still count. Cost: one new report can relist a delisted
+  number at once, which is unfair to the owner.
+- B2. Fresh cycle (P2): old reports are marked superseded (P3/P4) and counting
+  restarts. Cost: extra column or partial unique index; a real scammer needs
+  3 new accounts again.
+- B3. A reporter who counted in an earlier cycle cannot count again. Cost: a
+  genuine repeat victim is ignored.
+
+**Decision.** Proposed, not decided. Decide with D5/D7 in Week 6.
+
+**Consequences.** Until decided, a rejected appeal could leave the public page
+on "Under review" forever, and a relisted number could show "High Risk" or
+"No community reports yet" depending on whoever codes it. The audit log keeps
+every appeal and decision either way, so history is not lost.
+
+**How to test.**
+- A: Reporters A, B, C flag a number, the owner appeals, the moderator rejects.
+  What does the lookup show? (Under A1: "High Risk — Multiple Community Flags".)
+- B: The same number is delisted, then one new verified reporter flags it.
+  What does the lookup show? (Under B2: "Under review — not confirmed.")
+
+  ## N-XX+1: W1 Day 1, normalisation 1NF to 3NF (23 Nov)
+
+**Context.** Needed to fix `tags` stored as a string in ERD v0 (breaks 1NF).
+**What I did.** Toy library `loans` sheet: broke 1NF (books as a comma string);
+anomaly: correcting "Emma" means editing many strings. Split into members,
+books, loans, loan_books (junction, many-to-many).
+Drill: report sheet split into reporters, carriers, reported_numbers, reports,
+tags, report_tags.
+**Corrections from review.** 2NF is trivial with a one-column key. The
+reporter_phone move is a transitive dependency (3NF). Normalising needs UNIQUE
+constraints too. Carrier derived from the prefix may be better computed than stored.
+**Open.** What enforces "one reporter, one count per identifier" on reports?
