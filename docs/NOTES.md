@@ -324,3 +324,22 @@ tags, report_tags.
 reporter_phone move is a transitive dependency (3NF). Normalising needs UNIQUE
 constraints too. Carrier derived from the prefix may be better computed than stored.
 **Open.** What enforces "one reporter, one count per identifier" on reports?
+
+## N-XX+2: ERD v1 on paper, 14 tables and six decisions (23 Nov)
+
+**Context.** The 10-point ERD v0 triage produced a 10-table schema. Review added
+brands, otp_challenges, carriers and carrier_prefixes: 14 tables.
+**Decisions (paper only, schema not written).**
+1. Self-review guard: [your choice: trigger OR service check] because [reason].
+2. phone_hash: raw number is read from the request at send time; the hash is
+   stored. Pending D4 (Sat 28 Nov).
+3. One open appeal per identifier: partial unique index on identifier, where the
+   status is in the "open" set [list statuses]. Appeals come from the number's owner.
+4. audit_logs target_type/target_id: no foreign key possible; accepted trade-off.
+   Append-only enforcement: open, Week 2.
+5. identifiers.status is stored. Reason: anomaly_hold and appeal outcomes are
+   moderator state, not derivable from counts. Speed to be measured Tue 1 Dec.
+6. Plain UNIQUE (reporter, identifier) replaced by a partial unique index on
+   active reports. Leaning P3; P2 (fresh cycle) still undecided.
+**Unverified.** Prefix examples (099, 088 and operator names) are examples only.
+**Open.** Define the status values for reports and appeals before Tuesday DDL.

@@ -10,6 +10,12 @@ The learning chat reads this at the start of every session and updates it at the
 - Open M0 items: (1) output of `Select-String -Path docs\user-stories.md -Pattern '^### Story' | Measure-Object` was not shown; it must count 15. (2) `docs/NOTES.md` has no entry for the status-model gaps (what happens after a rejected appeal, re-report after delist), marked "proposed, not decided"; the learner writes it (Context, Options, Decision, Consequences, How to test).
 - Then: replace `docs/DECISION_LOG.md` with the updated file (adds D-PHONE-01, S5, X3 and the proposed list P1 to P8); update two stale README lines (progress row "In final review" becomes "Done"; the layout line says NOTES.md holds the user stories, it should list `user-stories.md` and `ARCHITECTURE.md`); commit with a conventional message; tick Quiz 0, fix weak spots and M0 in the tracker.
 
+- Last update: Mon 23 Nov 2026, about 23:30 (learner's time, UTC+2)
+- Week / day: W1 Day 1 (Mon 23 Nov), in progress. Done: warm-up, M0 close-out, normalisation study, 3NF drill.
+- Milestone: M0 Foundations: DONE (user-stories count = 15; status-model NOTES entry written, pending commit).
+- Next: build block (ERD v1 on paper: 14 tables), six gaps decided, wrap-up.
+- Open M0 items: none, once the NOTES.md entry and README fixes are committed.
+
 ## Environment (verified 23 Nov)
 - Windows 11, VS Code terminal (PowerShell). git 2.53.0, Python 3.14.6, psql 18.7, PostgreSQL 18.7 server running (login works, user postgres), Node 24.18.0.
 - Repo: C:\Users\fyaupi\Music\Ona-Scam-Hub, remote https://github.com/FAP5iVE/ona-scam-hub (public, 7 commits on GitHub, README renders).
@@ -28,6 +34,9 @@ Learner logs these; not verified by the tutor.
 |---|---|---|---|
 | Sun 22 Nov | Quiz 0 | 8 / 9 (89%) | PASS |
 | Sun 22 Nov | Fix-weak-spots drill | 3 / 3 | done |
+| Mon 23 Nov | W1D1 warm-up Q1/Q2 | 2/2 | PASS |
+| Mon 23 Nov | 3NF drill | table list correct, 4 corrections | done |
+
 
 Result is one of: PASS (75+), FIX (70 to 74, redo the weak section only), REMEDIAL (below 70).
 
@@ -49,6 +58,11 @@ Learner's own wrong models, in their words, to re-test later.
 - Earlier, now solid: UPDATE syntax (SET before WHERE) correct in Quiz 0; DELETE boundary; role of Visitor versus Reporter on reviews; independence rule (Story 1 contradiction fixed).
 - ERD: `tags` stored as a string breaks 1NF; to normalise Mon 23 Nov (junction tables).
 - Earlier (18 to 21 Nov): staging versus push; `.env` pattern does not match `.env.local`; empty folders need `.gitkeep`; a failed statement in a psql file does not stop the rest; omitting `id` in INSERT is allowed when SERIAL.
+- SERIAL vs PRIMARY KEY: warm-up Q2 correct this time (model now right). Re-test Tue 24 Nov with constraints before marking solid.
+- 2NF: said it holds because of a composite key in report_tags; it is trivially true for a one-column key. Re-test with a composite-key example.
+- Normalising is not enough: UNIQUE constraints are needed too (reporter_phone, phone_number).
+- Stored vs derived (carrier): corrected to derive from the prefix; still has to decide it for `identifiers.status`.
+- git status after `git add`: correct. Remember two lists (staged and unstaged).
 
 ## Bugs the learner hit (layer plus cause)
 - PowerShell: pasted a command with an interpreter path prefix; `New-Item -Name a, b, c` takes one string; angle-bracket placeholders are reserved; `Get-Content` extra argument.
@@ -60,6 +74,8 @@ Learner's own wrong models, in their words, to re-test later.
 - D5 (Week 6), D7 (Week 6, Story 11 proposed), D8 (Week 9).
 - Proposed, not decided: P1 to P8 in `docs/DECISION_LOG.md` (recompute status after a rejected appeal, fresh cycle after delist, `retracted` rows with a partial unique index, superseded versus cycle column, HIGH_RISK downgrade path, Story 6 masking, retention, reply moderation).
 - ERD v1 open points (brands table, roles, OTP table, one verified claim per identifier, appeal concurrency, stored versus derived status): decide between Mon 23 and Sat 28 Nov.
+- ERD v1 gaps 1 to 6 (see 23 Nov review) decide before Sat 28 Nov.
+- Plain UNIQUE (reporter, identifier) vs P2/P3: revisit in Week 6.
 
 ## Notes for the next session
 - Start: confirm the two open M0 items, commit, tick the tracker, then run `/start-day` for W1 Day 1 (Mon 23 Nov): warm-up on "Requirements" (predict the output or find the bug), then normalisation. Sleep first: the plan requires at least 7 h.
