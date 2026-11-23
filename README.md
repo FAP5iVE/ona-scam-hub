@@ -84,7 +84,7 @@ _sandbox/       30-minute practice drills, not part of the product
 docs/
   MASTER_PLAN.md      product spec, business rules, privacy guardrails
   DECISION_LOG.md     every decision with date, reason and revisit-when
-  NOTES.md            decision notes, ERD triage, privacy re-check, quiz results
+  NOTES.md            user stories, status-model proposals, ERD trade-offs
   user-stories.md     the 15 locked user stories with acceptance criteria
   ARCHITECTURE.md     layer diagram and design choices (stub until Week 3)
   erd/                entity diagrams (erd-v0.svg now, erd-v1.svg after Week 1)
